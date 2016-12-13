@@ -11,13 +11,15 @@ PODCASTS = ( "http://www.kfiam640.com/podcast/BillHandel.xml",
 			 "http://www.kfiam640.com/podcast/HOTL.xml",
 			 "http://www.kfiam640.com/podcast/darksecretplace.xml",
 			 "http://www.kfiam640.com/podcast/RicEdelman.xml" )
+			# http://kfiam640.iheart.com/podcast/garyandshannon.xml
 ARCHIVES = ( "BillHandel.txt",
 			 "HOTL.txt",
 			 "darksecretplace.txt",
 			 "RicEdelman.txt" )
          
 def Progress(count, blockSize, totalSize):
-	percent = int(count*blockSize*100/totalSize)
+	if totalSize != 0: percent = int(count*blockSize*100/totalSize)
+	else: percent = 100
 	a = "\rDownloading: %s...%d%%" % (fileP, percent)
 	sys.stdout.write("%80s" % a)
 	sys.stdout.flush()
@@ -29,9 +31,10 @@ def DownloadFiles(url_xml, archive):
 	file = urllib.urlopen(url_xml)
 
 	for lines in file:
-		if lines.split('>')[0] == "<guid":
-			links.append(lines.split('>')[1].split('<')[0])
-			fileNames.append(links[i].split('/')[-1])
+		t0 = lines.split("<guid>")
+		if len(t0) > 1:
+			links.append( t0[1].split("</guid>")[0] )
+			fileNames.append( links[i].split('/')[-1] )
 			i += 1
 
 	file.close()
