@@ -12,18 +12,19 @@ update_only = False
 PODCASTS = ( "http://www.kfiam640.com/podcast/BillHandel.xml",
              "http://www.kfiam640.com/podcast/HOTL.xml",
              "http://www.kfiam640.com/podcast/darksecretplace.xml",
-             "http://www.kfiam640.com/podcast/RicEdelman.xml", )
+             "http://www.kfiam640.com/podcast/RicEdelman.xml",)
              # "http://kfiam640.iheart.com/podcast/garyandshannon.xml" )
+
 ARCHIVES = ( "BillHandel.txt",
              "HOTL.txt",
              "darksecretplace.txt",
-             "RicEdelman.txt", )
+             "RicEdelman.txt",)
              # "garyandshannon.txt" )
 
 EXT = ( "hotn",
         "hotl",
         "dsp",
-        "re", )
+        "re",)
         # "gas" )
          
 def Progress(count, blockSize, totalSize):
@@ -79,6 +80,12 @@ def DownloadFiles(number):
             if newName[-4:] == ".mp3" or newName[-4:] == ".wav":
                 newName = newName[:-4] + "_" + show + newName[-4:]
                 urllib.urlretrieve(i, newName, reporthook=Progress)
+                print "\n"
+
+                err = SplitFile(newName)
+
+                if err == 0: os.remove(newName)
+
             print "\n"
 
     # Update the archive file (with only files from this run to
@@ -88,8 +95,44 @@ def DownloadFiles(number):
         file.write(lines+"\n")
     file.close()
 
+def SplitFile(file_name,break_len=10):
+    """ file_name is Something.mp3
+        break_len is in minutes """
+
+    from pydub import AudioSegment
+
+    name = file_name.split(".mp3")
+
+    if len(name) > 1: name = name[0]
+    else:
+        name = file_name.split(".wav")
+        if len(name) > 1: name = name[0]
+        else: return 1
+
+    sound = AudioSegment.from_mp3(file_name)
+
+    break_len *= 60000
+    # len() and slicing are in milliseconds
+    seg_len = len(sound) / break_len
+
+    seg_len
+
+    for i in range(seg_len):
+        seg = sound[i*break_len:(i+1)*break_len]
+        print "Exporting segment %i..."%(i+1); sys.stdout.flush()
+
+        seg.export("%s_%s.mp3"%(name,("%s"%(i+1)).zfill(2)), format="mp3")
+
+    # Last one
+    seg = sound[(i+1)*break_len:]
+    print "Exporting segment %i..."%(i+2); sys.stdout.flush()
+
+    seg.export("%s_%s.mp3"%(name,("%s"%(i+2)).zfill(2)), format="mp3")
+
+    return 0
+
 if __name__ == '__main__':
     for i, z in enumerate(PODCASTS):
         DownloadFiles(i)
 
-    raw_input('Press enter to exit ...')
+    # raw_input('Press enter to exit ...')
