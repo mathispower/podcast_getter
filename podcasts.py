@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+""" Requires pydub and libav_bin """
 ## TODO:
 import argparse
 import os
@@ -82,7 +82,7 @@ def DownloadFiles(number):
                 urllib.urlretrieve(i, newName, reporthook=Progress)
                 print "\n"
 
-                err = SplitFile(newName)
+                err = SplitFile(newName,34)
 
                 if err == 0: os.remove(newName)
 
@@ -111,11 +111,10 @@ def SplitFile(file_name,break_len=10):
 
     sound = AudioSegment.from_mp3(file_name)
 
-    break_len *= 60000
+    # break_len *= 60000
+    break_len = len(sound) // 4
     # len() and slicing are in milliseconds
     seg_len = len(sound) / break_len
-
-    seg_len
 
     for i in range(seg_len):
         seg = sound[i*break_len:(i+1)*break_len]
@@ -123,11 +122,11 @@ def SplitFile(file_name,break_len=10):
 
         seg.export("%s_%s.mp3"%(name,("%s"%(i+1)).zfill(2)), format="mp3")
 
-    # Last one
-    seg = sound[(i+1)*break_len:]
-    print "Exporting segment %i..."%(i+2); sys.stdout.flush()
+    # Last one (Usually very short and non-essential
+    # seg = sound[(i+1)*break_len:]
+    # print "Exporting segment %i..."%(i+2); sys.stdout.flush()
 
-    seg.export("%s_%s.mp3"%(name,("%s"%(i+2)).zfill(2)), format="mp3")
+    # seg.export("%s_%s.mp3"%(name,("%s"%(i+2)).zfill(2)), format="mp3")
 
     return 0
 
