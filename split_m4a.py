@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 """
     TODO:
-        - Check if ad present at start of file; remove 15-30s if so
+        - Auto-detect ads throughout file and delete them
 """
-import glob, math, os, subprocess as sp, sys
+import glob, math, os, shutil, subprocess as sp, sys
 
 DIR_OUT = "output"
 program = "ffmpeg.exe"
@@ -83,9 +83,17 @@ def split(file_name, seg_length=900):
     # Need some better error checking here
     os.remove(file_name)
 
+def trash_file(file_name):
+    if not os.path.isdir("trash"):
+        os.mkdir("trash")
+
+    shutil.move(file_name, os.path.join("trash", file_name))
+
 if __name__ == "__main__":
     file_list = glob.glob("*.m4a")
     file_list.extend(glob.glob("*.mp3"))
 
     for f_l in file_list:
         split( crop_ad(f_l) )
+
+        trash_file(f_l)
